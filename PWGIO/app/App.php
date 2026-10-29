@@ -8,7 +8,7 @@
 
 declare(strict_types=1);
 
-function getTransactionFiles(string $dirPath): array
+function getFiles(string $dirPath): array
 {
     $files = [];
 
@@ -19,7 +19,7 @@ function getTransactionFiles(string $dirPath): array
     return $files;
 }
 
-function getTransactions(array $fileName): array
+function validate(array $fileName): array
 {
     $transactions = [];
 
@@ -40,7 +40,7 @@ function getTransactions(array $fileName): array
     return $transactions;
 }
 
-function formatTransactions(array $transactions): array
+function normalize(array $transactions): array
 {
     $keys = array_shift(array: $transactions)
     |> (fn(array $array): array => preg_replace(
