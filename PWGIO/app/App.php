@@ -51,8 +51,6 @@ function validate(array $fileName): array
             fclose(stream: $actualFile);
             clearstatcache(clear_realpath_cache: true, filename: $file);
         }
-
-        return $transactions;
     }
 
     return $transactions;
