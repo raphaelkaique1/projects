@@ -11,9 +11,10 @@ define('VIEWS_PATH', $root . 'app' . DIRECTORY_SEPARATOR);
 require_once APP_PATH . 'App.php';
 require_once VIEWS_PATH . 'App.php';
 
-$transactions = getTransactionFiles(dirPath: FILES_PATH)
-    |> getTransactions(...)
-    |> formatTransactions(...)
+$transactions
+    = getFiles(dirPath: FILES_PATH)
+    |> validate(...)
+    |> normalize(...)
     |> displayBalance(...);
 
 echo '<pre>';
