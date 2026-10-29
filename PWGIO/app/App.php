@@ -27,22 +27,32 @@ function validate(array $fileName): array
     $transactions = [];
 
     foreach ($fileName as $file) {
-        !file_exists(filename: $file)
-            && throw new \Exception(
-                message: "File {$file} does not exist."
-            );
+        ($fileErrorStatus = match (true) {
+            !is_file(filename: $file) => 'is not a regular file',
+            !is_readable(filename: $file) => 'is not readable',
+            default => null
+        }) && throw new \RuntimeException(
+            message: "File {$file} {$fileErrorStatus}."
+        );
 
-        $actualFile = fopen(filename: $file, mode: 'r')
-            or throw new \Exception(
-                message: "Could not open file {$file}."
-            );
+        ($actualFile = fopen($file, 'r')) || throw new \RuntimeException(
+            message: "Could not open file {$file}."
+        );
 
-        while(($transaction = fgetcsv(stream: $actualFile)) !== false) {
-            $transactions[] = $transaction;
+        try {
+            while (($transaction = fgetcsv($actualFile)) !== false) {
+                $transactions[] = $transaction;
+            }
+        } catch(\Throwable $error) {
+            throw new \Exception(
+                message: "Error while reading {$file} on {$error}"
+            );
+        } finally {
+            fclose(stream: $actualFile);
+            clearstatcache(clear_realpath_cache: true, filename: $file);
         }
 
-        fclose(stream: $actualFile);
-        clearstatcache(clear_realpath_cache: true, filename: $file);
+        return $transactions;
     }
 
     return $transactions;
