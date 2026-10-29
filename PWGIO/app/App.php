@@ -11,9 +11,12 @@ declare(strict_types=1);
 function getFiles(string $dirPath): array
 {
     $files = [];
+    $dir = scandir(directory: $dirPath) or throw new \Exception(
+        message: "Failed to open directory {$dirPath}"
+    );
 
-    foreach (scandir(directory: $dirPath) as $file) {
-        is_dir(filename: $file) ?: $files[] = $dirPath . $file;
+    foreach ($dir as $file) {
+        !is_dir(filename: $file) && $files[] = $dirPath . $file;
     }
 
     return $files;
@@ -24,10 +27,15 @@ function validate(array $fileName): array
     $transactions = [];
 
     foreach ($fileName as $file) {
-        file_exists(filename: $file)
-        ?: throw new Exception(message: "File {$file} does not exist.");
+        !file_exists(filename: $file)
+            && throw new \Exception(
+                message: "File {$file} does not exist."
+            );
 
-        $actualFile = fopen(filename: $file, mode: 'r');
+        $actualFile = fopen(filename: $file, mode: 'r')
+            or throw new \Exception(
+                message: "Could not open file {$file}."
+            );
 
         while(($transaction = fgetcsv(stream: $actualFile)) !== false) {
             $transactions[] = $transaction;
@@ -42,31 +50,32 @@ function validate(array $fileName): array
 
 function normalize(array $transactions): array
 {
-    $keys = array_shift(array: $transactions)
-    |> (fn(array $array): array => preg_replace(
-            pattern: '/[^\p{L}]/u',
-            replacement: '',
-            subject: $array
+    $headers = array_shift(array: $transactions)
+        |> (
+            fn(array $array): array => preg_replace(
+                pattern: '/[^\p{L}]/u',
+                replacement: '',
+                subject: $array
+            )
         )
-    )
-    |> (fn(array $array): array => array_map(
-            callback: fn(string $path) => mb_convert_case(
-                string: $path,
-                mode: MB_CASE_TITLE
-            ),
-            array: $array
-        )
-    );
+        |> (
+            fn(array $array): array => array_map(
+                callback: fn(string $path) => mb_convert_case(
+                    string: $path,
+                    mode: MB_CASE_TITLE
+                ),
+                array: $array
+            )
+        );
 
     return array_map(
-        callback: function (array $transaction) use($keys): array {
-
+        callback: function (array $transaction) use(&$headers): array {
             $transaction[0] = (string) (\DateTimeImmutable::createFromFormat(
                 format: 'm/d/Y',
                 datetime: $transaction[0]
             ))->format(format: 'd/m/Y');
 
-            $transaction[1] = (int) $transaction[1] ?: 0;
+            $transaction[1] = (int) $transaction[1] ?? 0;
 
             $transaction[2] = (string) preg_replace(
                 pattern: '/[^\p{L}\s0-9]/u',
@@ -79,7 +88,8 @@ function normalize(array $transactions): array
                 replacement: '',
                 subject: $transaction[3]
             )
-            |> (fn(float $value): string|false => (new \NumberFormatter(
+            |> (
+                fn(float $value): string|false => (new \NumberFormatter(
                     locale: 'pt_BR',
                     style: \NumberFormatter::CURRENCY
                 ))->formatCurrency(
@@ -88,7 +98,7 @@ function normalize(array $transactions): array
                 )
             );
 
-            return array_combine(keys: $keys, values: $transaction);
+            return array_combine(keys: $headers, values: $transaction);
         },
         array: $transactions
     );
@@ -100,9 +110,20 @@ function displayBalance(array $transactions): array
     $withdrawls = [];
 
     $transactions = array_map(
-        callback: function (array $transaction) use (&$deposits, &$withdrawls): array {
+        callback: function (
+            array $transaction
+        ) use (&$deposits, &$withdrawls): array {
 
             $currency = 'BRL';
+
+            $save = static function (
+                array &$list,
+                float $amount,
+                string $operation
+            ): string {
+                $list[] = $amount;
+                return $operation;
+            };
 
             $amount = (new \NumberFormatter(
                 locale: 'pt_BR',
@@ -117,8 +138,17 @@ function displayBalance(array $transactions): array
                     haystack: $transaction['Amount'],
                     needle: '-'
                 )
-                ? ($withdrawls[] = (float) $amount) && 'Withdrawal'
-                : ($deposits[] = (float) $amount) && 'Deposit';
+                    ? $save(
+                        list: $withdrawls,
+                        amount: $amount,
+                        operation: 'Withdrawal'
+                    )
+                    : $save(
+                        list: $deposits,
+                        amount: $amount,
+                        operation: 'Deposit'
+                    );
+
             return $transaction;
         },
         array: $transactions
