@@ -58,7 +58,9 @@ function validate(array $fileName): array
 
 function normalize(array $transactions): array
 {
-    $headers = array_shift(array: $transactions)
+    $originalHeaders = array_shift(array: $transactions);
+
+    $headers = $originalHeaders
         |> (
             fn(array $array): array => preg_replace(
                 pattern: '/[^\p{L}]/u',
@@ -108,7 +110,10 @@ function normalize(array $transactions): array
 
             return array_combine(keys: $headers, values: $transaction);
         },
-        array: $transactions
+        array: array_filter(
+            array: $transactions,
+            callback: fn(array $transaction): bool => $transaction !== $originalHeaders
+        )
     );
 }
 
