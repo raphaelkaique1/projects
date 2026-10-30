@@ -132,10 +132,14 @@ function displayBalance(array $transactions): array
 
                 $save = static function (
                     array &$list,
-                    float $amount,
+                    float &$amount,
+                    string &$description,
+                    string &$original,
                     string $operation
                 ): string {
-                    $list[] = $amount;
+                    $list['Formatted'][] = $amount;
+                    $list['Original'][$description] = $original;
+
                     return $operation;
                 };
 
@@ -147,6 +151,12 @@ function displayBalance(array $transactions): array
                     currency: $currency
                 );
 
+                $description = preg_replace(
+                    pattern: '/\s/',
+                    replacement: '_',
+                    subject: $transaction['Description']
+                );
+
                 $transaction['Operation'] =
                     str_contains(
                         haystack: $transaction['Amount'],
@@ -155,11 +165,15 @@ function displayBalance(array $transactions): array
                         ? $save(
                             list: $withdrawls,
                             amount: $amount,
+                            description: $description,
+                            original: $transaction['Amount'],
                             operation: 'Withdrawal'
                         )
                         : $save(
                             list: $deposits,
                             amount: $amount,
+                            description: $description,
+                            original: $transaction['Amount'],
                             operation: 'Deposit'
                         );
 
@@ -168,31 +182,39 @@ function displayBalance(array $transactions): array
     );
 
     [$deposits['Total_Qnt'], $deposits['Total_Value']] = [
-        count(value: $deposits),
+        count(value: $deposits['Original']),
         (new \NumberFormatter(
             locale: 'pt_BR',
             style: \NumberFormatter::CURRENCY
         ))->formatCurrency(
-            amount: $depositsValue = array_sum(array: $deposits),
+            amount: $depositsValue = array_sum(array: $deposits['Formatted']),
             currency: 'BRL'
         )
     ];
 
     [$withdrawls['Total_Qnt'], $withdrawls['Total_Value']] = [
-        count(value: $withdrawls),
+        count(value: $withdrawls['Original']),
         (new \NumberFormatter(
             locale: 'pt_BR',
             style: \NumberFormatter::CURRENCY
         ))->formatCurrency(
-            amount: $withdrawlsValue = array_sum(array: $withdrawls),
+            amount: $withdrawlsValue = array_sum(array: $withdrawls['Formatted']),
             currency: 'BRL'
         )
     ];
 
     return [
         ...$transactions,
-        'Deposits' => $deposits,
-        'Withdrawls' => $withdrawls,
+        'Deposits' => [
+            'Total_Qnt' => $deposits['Total_Qnt'],
+            'Total_Value' => $deposits['Total_Value'],
+            ...$deposits['Original']
+        ],
+        'Withdrawls' => [
+            'Total_Qnt' => $withdrawls['Total_Qnt'],
+            'Total_Value' => $withdrawls['Total_Value'],
+            ...$withdrawls['Original']
+        ],
         'Balance' => 
             (new \NumberFormatter(
                 locale: 'pt_BR',
