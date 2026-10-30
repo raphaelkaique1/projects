@@ -204,7 +204,7 @@ function displayBalance(array $transactions): array
     ];
 
     return [
-        ...$transactions,
+        'Transactions' => [...$transactions],
         'Deposits' => [
             'Total_Qnt' => $deposits['Total_Qnt'],
             'Total_Value' => $deposits['Total_Value'],

@@ -17,6 +17,9 @@ $transactions
     |> normalize(...)
     |> displayBalance(...);
 
-echo '<pre>';
-print_r($transactions);
-echo '</pre>';
+header(
+    'Content-Type: application/json',
+    response_code: 200
+);
+
+echo json_encode(value: (object) $transactions);
