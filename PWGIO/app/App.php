@@ -31,11 +31,11 @@ function validate(array $fileName): array
             !is_file(filename: $file) => 'is not a regular file',
             !is_readable(filename: $file) => 'is not readable',
             default => null
-        }) && throw new \RuntimeException(
+        }) && throw new \Exception(
             message: "File {$file} {$fileErrorStatus}."
         );
 
-        ($actualFile = fopen($file, 'r')) || throw new \RuntimeException(
+        ($actualFile = fopen($file, 'r')) || throw new \Exception(
             message: "Could not open file {$file}."
         );
 
@@ -228,4 +228,15 @@ function displayBalance(array $transactions): array
                 currency: 'BRL'
             )
     ];
+}
+
+function json(array $transactions): string
+{
+    return json_validate(
+        $json = json_encode(value: (object) $transactions)
+    )
+    ? $json
+    : throw new \Exception(
+        message: "Error while attempting to form JSON:"
+    );
 }
