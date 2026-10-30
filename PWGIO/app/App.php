@@ -122,49 +122,49 @@ function displayBalance(array $transactions): array
     $deposits = [];
     $withdrawls = [];
 
-    $transactions = array_map(
+    array_walk(
+        array: $transactions,
         callback: function (
-            array $transaction
-        ) use (&$deposits, &$withdrawls): array {
+                array $transaction
+            ) use (&$deposits, &$withdrawls): array {
 
-            $currency = 'BRL';
+                $currency = 'BRL';
 
-            $save = static function (
-                array &$list,
-                float $amount,
-                string $operation
-            ): string {
-                $list[] = $amount;
-                return $operation;
-            };
+                $save = static function (
+                    array &$list,
+                    float $amount,
+                    string $operation
+                ): string {
+                    $list[] = $amount;
+                    return $operation;
+                };
 
-            $amount = (new \NumberFormatter(
-                locale: 'pt_BR',
-                style: \NumberFormatter::DECIMAL
-            ))->parseCurrency(
-                string: $transaction['Amount'],
-                currency: $currency
-            );
+                $amount = (new \NumberFormatter(
+                    locale: 'pt_BR',
+                    style: \NumberFormatter::DECIMAL
+                ))->parseCurrency(
+                    string: $transaction['Amount'],
+                    currency: $currency
+                );
 
-            $transaction['Operation'] =
-                str_contains(
-                    haystack: $transaction['Amount'],
-                    needle: '-'
-                )
-                    ? $save(
-                        list: $withdrawls,
-                        amount: $amount,
-                        operation: 'Withdrawal'
+                $transaction['Operation'] =
+                    str_contains(
+                        haystack: $transaction['Amount'],
+                        needle: '-'
                     )
-                    : $save(
-                        list: $deposits,
-                        amount: $amount,
-                        operation: 'Deposit'
-                    );
+                        ? $save(
+                            list: $withdrawls,
+                            amount: $amount,
+                            operation: 'Withdrawal'
+                        )
+                        : $save(
+                            list: $deposits,
+                            amount: $amount,
+                            operation: 'Deposit'
+                        );
 
-            return $transaction;
-        },
-        array: $transactions
+                return $transaction;
+            }
     );
 
     [$deposits['Total_Qnt'], $deposits['Total_Value']] = [
