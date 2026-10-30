@@ -194,16 +194,16 @@ function displayBalance(array $transactions): array
         'Deposits' => $deposits,
         'Withdrawls' => $withdrawls,
         'Balance' => 
-        (new \NumberFormatter(
-            locale: 'pt_BR',
-            style: \NumberFormatter::CURRENCY
-        ))->formatCurrency(
-            amount: (float) bcsub(
-                num1: (string) $depositsValue,
-                num2: (string) -$withdrawlsValue,
-                scale: 2
-            ),
-            currency: 'BRL'
-        )
+            (new \NumberFormatter(
+                locale: 'pt_BR',
+                style: \NumberFormatter::CURRENCY
+            ))->formatCurrency(
+                amount: (float) bcsub(
+                    num1: (string) $depositsValue,
+                    num2: (string) -$withdrawlsValue,
+                    scale: 2
+                ),
+                currency: 'BRL'
+            )
     ];
 }
