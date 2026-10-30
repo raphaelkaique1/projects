@@ -232,9 +232,12 @@ function displayBalance(array $transactions): array
 
 function json(array $transactions): string
 {
-    return json_validate(
-        $json = json_encode(value: (object) $transactions)
-    )
+    return ($json = json_encode(
+        value: (object) $transactions,
+        flags: JSON_UNESCAPED_UNICODE
+            | JSON_UNESCAPED_SLASHES
+            | JSON_THROW_ON_ERROR
+    ))
     ? $json
     : throw new \Exception(
         message: "Error while attempting to form JSON:"
