@@ -8,18 +8,52 @@
 
 declare(strict_types=1);
 
-function getFiles(string $dirPath): array
+namespace App;
+
+final class Transactions
 {
-    $files = [];
-    $dir = scandir(directory: $dirPath) or throw new \Exception(
-        message: "Failed to open directory {$dirPath}"
-    );
+    private(set) array $files = [];
+    private(set) array $transactions = [];
 
-    foreach ($dir as $file) {
-        !is_dir(filename: $file) && $files[] = $dirPath . $file;
+    public function __construct(
+        private(set) string $dirPath
+    ) {
+        $dir = scandir(directory: $dirPath) or throw new \Exception(
+            message: "Failed to open directory {$dirPath}"
+        );
+
+        foreach ($dir as $file) {
+            !is_dir(filename: $file)
+                && $this->files[] = $this->dirPath . $file;
+        }
+
+        foreach ($this->files as $file) {
+            ($fileErrorStatus = match (true) {
+                !is_file(filename: $file) => 'is not a regular file',
+                !is_readable(filename: $file) => 'is not readable',
+                default => null
+            }) && throw new \Exception(
+                message: "File {$file} {$fileErrorStatus}."
+            );
+
+            ($actualLine = fopen($file, 'r')) || throw new \Exception(
+                message: "Could not open file {$file}."
+            );
+
+            try {
+                while (($transaction = fgetcsv($actualLine)) !== false) {
+                    $this->transactions[] = $transaction;
+                }
+            } catch(\Throwable $error) {
+                throw new \Exception(
+                    message: "Error while reading {$file}: {$error}"
+                );
+            } finally {
+                fclose(stream: $actualLine);
+                clearstatcache(clear_realpath_cache: true, filename: $file);
+            }
+        }
     }
-
-    return $files;
 }
 
 function validate(array $fileName): array
