@@ -11,15 +11,16 @@ define('VIEWS_PATH', $root . 'app' . DIRECTORY_SEPARATOR);
 require_once APP_PATH . 'App.php';
 require_once VIEWS_PATH . 'App.php';
 
-$transactions
-    = getFiles(dirPath: FILES_PATH)
-    |> validate(...)
-    |> normalize(...)
-    |> displayBalance(...);
-
 header(
     'Content-Type: application/json',
     response_code: 200
 );
 
-echo json_encode(value: (object) $transactions);
+echo $transactions
+    = getFiles(dirPath: FILES_PATH)
+    |> validate(...)
+    |> normalize(...)
+    |> displayBalance(...)
+    |> json(...);
+
+exit;
