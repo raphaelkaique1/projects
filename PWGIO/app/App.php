@@ -45,7 +45,7 @@ function validate(array $fileName): array
             }
         } catch(\Throwable $error) {
             throw new \Exception(
-                message: "Error while reading {$file} on {$error}"
+                message: "Error while reading {$file}: {$error}"
             );
         } finally {
             fclose(stream: $actualFile);
