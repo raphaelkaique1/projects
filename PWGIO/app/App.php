@@ -240,6 +240,6 @@ function json(array $transactions): string
     ))
     ? $json
     : throw new \Exception(
-        message: "Error while attempting to form JSON:"
+        message: "Error while attempting to form JSON."
     );
 }
