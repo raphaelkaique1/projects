@@ -32,11 +32,12 @@ final class Transactions
         );
 
         $this->currency = new \NumberFormatter(
-            $this->locale,
-            \NumberFormatter::CURRENCY
-        )->getTextAttribute(
-            \NumberFormatter::CURRENCY_CODE
-        );
+                $this->locale,
+                \NumberFormatter::CURRENCY
+            )
+            ->getTextAttribute(
+                \NumberFormatter::CURRENCY_CODE
+            );
 
         foreach ($dir as $file) {
             !is_dir(filename: $file)
@@ -95,6 +96,8 @@ final class Transactions
                 )
             );
 
+        $headers[] = 'Currency';
+
         return array_map(
             callback: function (array $transaction) use(&$documentLocale, &$headers): array {
                 $dateFormatted = (int) new \IntlDateFormatter(
@@ -112,29 +115,31 @@ final class Transactions
                         locale: null,
                         pattern: 'yyyy-MM-dd'
                     )
-                    ->format($dateFormatted);
+                    ->format(
+                        datetime: $dateFormatted
+                    );
 
                 $transaction[1] = (int) ($transaction[1] ?? 0);
 
                 $transaction[2] = (string) preg_replace(
-                    pattern: '/[^\p{L}\s0-9]/u',
-                    replacement: '',
-                    subject: $transaction[2]
-                ) |> trim(...);
+                        pattern: '/[^\p{L}\s0-9]/u',
+                        replacement: '',
+                        subject: $transaction[2]
+                    ) |> trim(...);
 
                 $transaction[3] = (float) preg_replace(
-                    pattern: ['/[^\-\.0-9]/'],
-                    replacement: '',
-                    subject: $transaction[3]
-                )
-                |> (
-                    fn(float $value): string|false => (new \NumberFormatter(
-                        locale: $this->locale,
-                        style: \NumberFormatter::DECIMAL
-                    ))->format(
-                        num: $value
+                        pattern: ['/[^\-\.0-9]/'],
+                        replacement: '',
+                        subject: $transaction[3]
+                    );
+
+                $transaction[4] = (string) new \NumberFormatter(
+                        $documentLocale,
+                        \NumberFormatter::CURRENCY
                     )
-                );
+                    ->getTextAttribute(
+                        \NumberFormatter::CURRENCY_CODE
+                    );
 
                 return array_combine(keys: $headers, values: $transaction);
             },
@@ -145,6 +150,18 @@ final class Transactions
 
 function format(array $transactions): array
 {
+
+    /**
+        (
+            fn(float $value): string|false => (new \NumberFormatter(
+                locale: $this->locale,
+                style: \NumberFormatter::DECIMAL
+            ))->format(
+                num: $value
+            )
+        );
+     */
+
     $deposits = [];
     $withdrawls = [];
 
