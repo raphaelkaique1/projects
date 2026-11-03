@@ -66,17 +66,18 @@ final class Transactions
                     previous: $error
                 );
             } finally {
-                // $this->transactions = $this->normalize(transactions: $this->transactions);
                 fclose(stream: $actualLine);
                 clearstatcache(clear_realpath_cache: true, filename: $file);
             }
         }
     }
 
-    private function normalize(array $transactions): array
+    public function normalize(?string $documentLocale = null): array
     {
+        $documentLocale ??= $this->locale;
+
         $headers
-            = array_shift(array: $transactions)
+            = array_shift(array: $this->transactions)
             |> (
                 fn(array $array): array => preg_replace(
                     pattern: '/[^\p{L}]/u',
@@ -95,20 +96,23 @@ final class Transactions
             );
 
         return array_map(
-            callback: function (array $transaction) use(&$headers): array {
-                /**
-                   $formatter = new IntlDateFormatter(
-                        locale: 'pt_BR', # $documentLocale
-                        dateType: IntlDateFormatter::SHORT,
-                        timeType: IntlDateFormatter::NONE
+            callback: function (array $transaction) use(&$documentLocale, &$headers): array {
+                $dateFormatted = (int) new \IntlDateFormatter(
+                        locale: $documentLocale,
+                        dateType: \IntlDateFormatter::SHORT,
+                        timeType: \IntlDateFormatter::NONE,
+                        timezone: 'UTC',
+                        calendar: \IntlDateFormatter::GREGORIAN
+                    )
+                    ->parse(
+                        string: $transaction[0]
                     );
 
-                    echo $formatter->getPattern();
-                 */
-                $transaction[0] = (string) (\DateTimeImmutable::createFromFormat(
-                    format: 'm/d/Y',
-                    datetime: $transaction[0]
-                ))->format(format: 'c');
+                $transaction[0] = (string) new \IntlDateFormatter(
+                        locale: null,
+                        pattern: 'yyyy-MM-dd'
+                    )
+                    ->format($dateFormatted);
 
                 $transaction[1] = (int) ($transaction[1] ?? 0);
 
@@ -134,7 +138,7 @@ final class Transactions
 
                 return array_combine(keys: $headers, values: $transaction);
             },
-            array: $transactions
+            array: $this->transactions
         );
     }
 }
@@ -252,7 +256,7 @@ function format(array $transactions): array
     ];
 }
 
-function json(array $transactions): string
+function setJSON(array $transactions): string
 {
     return ($json = json_encode(
         value: (object) $transactions,
