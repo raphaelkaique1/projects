@@ -13,13 +13,14 @@ define('VIEWS_PATH', $root . 'app' . DIRECTORY_SEPARATOR);
 require_once APP_PATH . 'App.php';
 require_once VIEWS_PATH . 'App.php';
 
-/*header(
+header(
     'Content-Type: application/json',
     response_code: 200
-);*/
+);
 
 $transactions = new Transactions(
-    dirPath: FILES_PATH
+    dirPath: FILES_PATH,
+    locale: 'pt_BR'
 );
 
 var_dump($transactions);

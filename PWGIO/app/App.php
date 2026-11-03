@@ -10,16 +10,32 @@ declare(strict_types=1);
 
 namespace App;
 
+use IntlException;
+
 final class Transactions
 {
-    private(set) array $files = [];
-    private(set) array $transactions = [];
+    public private(set) array $files = [];
+    public private(set) array $transactions = [];
+    public private(set) string $currency = '';
 
     public function __construct(
-        private(set) string $dirPath
+        public private(set) string $dirPath,
+        public private(set) string $locale {
+            set => \Locale::canonicalize(locale: $value)
+                ?? throw new IntlException(
+                    message: "Parameter (locale: '{$value}') is not a valide locale identifier."
+                );
+        }
     ) {
         $dir = scandir(directory: $dirPath) or throw new \Exception(
-            message: "Failed to open directory {$dirPath}"
+            message: "Failed to open directory '{$dirPath}'."
+        );
+
+        $this->currency = new \NumberFormatter(
+            $this->locale,
+            \NumberFormatter::CURRENCY
+        )->getTextAttribute(
+            \NumberFormatter::CURRENCY_CODE
         );
 
         foreach ($dir as $file) {
@@ -33,11 +49,11 @@ final class Transactions
                 !is_readable(filename: $file) => 'is not readable',
                 default => null
             }) && throw new \Exception(
-                message: "File {$file} {$fileErrorStatus}."
+                message: "File '{$file}' {$fileErrorStatus}."
             );
 
             ($actualLine = fopen($file, 'r')) || throw new \Exception(
-                message: "Could not open file {$file}."
+                message: "Could not open file '{$file}'."
             );
 
             try {
@@ -46,112 +62,84 @@ final class Transactions
                 }
             } catch(\Throwable $error) {
                 throw new \Exception(
-                    message: "Error while reading {$file}: {$error}"
+                    message: "Error while reading '{$file}'.",
+                    previous: $error
                 );
             } finally {
+                // $this->transactions = $this->normalize(transactions: $this->transactions);
                 fclose(stream: $actualLine);
                 clearstatcache(clear_realpath_cache: true, filename: $file);
             }
         }
     }
-}
 
-function validate(array $fileName): array
-{
-    $transactions = [];
-
-    foreach ($fileName as $file) {
-        ($fileErrorStatus = match (true) {
-            !is_file(filename: $file) => 'is not a regular file',
-            !is_readable(filename: $file) => 'is not readable',
-            default => null
-        }) && throw new \Exception(
-            message: "File {$file} {$fileErrorStatus}."
-        );
-
-        ($actualFile = fopen($file, 'r')) || throw new \Exception(
-            message: "Could not open file {$file}."
-        );
-
-        try {
-            while (($transaction = fgetcsv($actualFile)) !== false) {
-                $transactions[] = $transaction;
-            }
-        } catch(\Throwable $error) {
-            throw new \Exception(
-                message: "Error while reading {$file}: {$error}"
-            );
-        } finally {
-            fclose(stream: $actualFile);
-            clearstatcache(clear_realpath_cache: true, filename: $file);
-        }
-    }
-
-    return $transactions;
-}
-
-function normalize(array $transactions): array
-{
-    $originalHeaders = array_shift(array: $transactions);
-
-    $headers = $originalHeaders
-        |> (
-            fn(array $array): array => preg_replace(
-                pattern: '/[^\p{L}]/u',
-                replacement: '',
-                subject: $array
-            )
-        )
-        |> (
-            fn(array $array): array => array_map(
-                callback: fn(string $path) => mb_convert_case(
-                    string: $path,
-                    mode: MB_CASE_TITLE
-                ),
-                array: $array
-            )
-        );
-
-    return array_map(
-        callback: function (array $transaction) use(&$headers): array {
-            $transaction[0] = (string) (\DateTimeImmutable::createFromFormat(
-                format: 'm/d/Y',
-                datetime: $transaction[0]
-            ))->format(format: 'd/m/Y');
-
-            $transaction[1] = (int) $transaction[1] ?? 0;
-
-            $transaction[2] = (string) preg_replace(
-                pattern: '/[^\p{L}\s0-9]/u',
-                replacement: '',
-                subject: $transaction[2]
-            ) |> trim(...);
-
-            $transaction[3] = (float) preg_replace(
-                pattern: ['/[^\-\.0-9]/'],
-                replacement: '',
-                subject: $transaction[3]
+    private function normalize(array $transactions): array
+    {
+        $headers
+            = array_shift(array: $transactions)
+            |> (
+                fn(array $array): array => preg_replace(
+                    pattern: '/[^\p{L}]/u',
+                    replacement: '',
+                    subject: $array
+                )
             )
             |> (
-                fn(float $value): string|false => (new \NumberFormatter(
-                    locale: 'pt_BR',
-                    style: \NumberFormatter::CURRENCY
-                ))->formatCurrency(
-                    amount: $value,
-                    currency: 'BRL'
+                fn(array $array): array => array_map(
+                    callback: fn(string $path) => mb_convert_case(
+                        string: $path,
+                        mode: MB_CASE_TITLE
+                    ),
+                    array: $array
                 )
             );
 
-            return array_combine(keys: $headers, values: $transaction);
-        },
-        array: array_filter(
-            array: $transactions,
-            callback: fn(array $transaction): bool => $transaction !== $originalHeaders
-        )
-    );
+        return array_map(
+            callback: function (array $transaction) use(&$headers): array {
+                /**
+                   $formatter = new IntlDateFormatter(
+                        locale: 'pt_BR', # $documentLocale
+                        dateType: IntlDateFormatter::SHORT,
+                        timeType: IntlDateFormatter::NONE
+                    );
+
+                    echo $formatter->getPattern();
+                 */
+                $transaction[0] = (string) (\DateTimeImmutable::createFromFormat(
+                    format: 'm/d/Y',
+                    datetime: $transaction[0]
+                ))->format(format: 'c');
+
+                $transaction[1] = (int) ($transaction[1] ?? 0);
+
+                $transaction[2] = (string) preg_replace(
+                    pattern: '/[^\p{L}\s0-9]/u',
+                    replacement: '',
+                    subject: $transaction[2]
+                ) |> trim(...);
+
+                $transaction[3] = (float) preg_replace(
+                    pattern: ['/[^\-\.0-9]/'],
+                    replacement: '',
+                    subject: $transaction[3]
+                )
+                |> (
+                    fn(float $value): string|false => (new \NumberFormatter(
+                        locale: $this->locale,
+                        style: \NumberFormatter::DECIMAL
+                    ))->format(
+                        num: $value
+                    )
+                );
+
+                return array_combine(keys: $headers, values: $transaction);
+            },
+            array: $transactions
+        );
+    }
 }
 
-function displayBalance(array $transactions): array
+function format(array $transactions): array
 {
     $deposits = [];
     $withdrawls = [];
