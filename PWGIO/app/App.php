@@ -19,28 +19,13 @@ final class Transactions
 {
     public private(set) array $files = [];
     public private(set) array $transactions = [];
-    public private(set) string $currency = '';
 
     public function __construct(
-        public private(set) string $dirPath,
-        public private(set) string $locale {
-            set => \Locale::canonicalize(locale: $value)
-                ?? throw new IntlException(
-                    message: "Parameter (locale: '{$value}') is not a valide locale identifier."
-                );
-        }
+        public private(set) string $dirPath
     ) {
         $dir = scandir(directory: $dirPath) or throw new \Exception(
             message: "Failed to open directory '{$dirPath}'."
         );
-
-        $this->currency = new \NumberFormatter(
-                $this->locale,
-                \NumberFormatter::CURRENCY
-            )
-            ->getTextAttribute(
-                \NumberFormatter::CURRENCY_CODE
-            );
 
         foreach ($dir as $file) {
             !is_dir(filename: $file)

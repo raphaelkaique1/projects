@@ -19,8 +19,7 @@ header(
 );
 
 $transactions = new Transactions(
-        dirPath: FILES_PATH,
-        locale: 'pt_BR'
+        dirPath: FILES_PATH
     )
     ->normalize(documentLocale: 'en_US');
 
