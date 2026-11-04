@@ -149,11 +149,6 @@ final class Transactions
                 message: "Parameter (locale: '{$formatLocale}') is not a valide locale identifier."
             );
 
-        $currencyFormatter = new NumberFormatter(
-            locale: $formatLocale,
-            style: NumberFormatter::DECIMAL
-        );
-
         $transactions = array_map(
             callback: function (
                     array $transaction
