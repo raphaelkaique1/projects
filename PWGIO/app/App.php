@@ -10,7 +10,10 @@ declare(strict_types=1);
 
 namespace App;
 
-use IntlException;
+use Locale,
+    NumberFormatter,
+    IntlDateFormatter,
+    IntlException;
 
 final class Transactions
 {
@@ -100,18 +103,18 @@ final class Transactions
 
         return array_map(
             callback: function (array $transaction) use(&$documentLocale, &$headers): array {
-                $dateFormatted = (int) new \IntlDateFormatter(
+                $dateFormatted = (int) new IntlDateFormatter(
                         locale: $documentLocale,
-                        dateType: \IntlDateFormatter::SHORT,
-                        timeType: \IntlDateFormatter::NONE,
+                        dateType: IntlDateFormatter::SHORT,
+                        timeType: IntlDateFormatter::NONE,
                         timezone: 'UTC',
-                        calendar: \IntlDateFormatter::GREGORIAN
+                        calendar: IntlDateFormatter::GREGORIAN
                     )
                     ->parse(
                         string: $transaction[0]
                     );
 
-                $transaction[0] = (string) new \IntlDateFormatter(
+                $transaction[0] = (string) new IntlDateFormatter(
                         locale: null,
                         pattern: 'yyyy-MM-dd'
                     )
@@ -133,12 +136,12 @@ final class Transactions
                         subject: $transaction[3]
                     );
 
-                $transaction[4] = (string) new \NumberFormatter(
+                $transaction[4] = (string) new NumberFormatter(
                         $documentLocale,
-                        \NumberFormatter::CURRENCY
+                        NumberFormatter::CURRENCY
                     )
                     ->getTextAttribute(
-                        \NumberFormatter::CURRENCY_CODE
+                        NumberFormatter::CURRENCY_CODE
                     );
 
                 return array_combine(keys: $headers, values: $transaction);
