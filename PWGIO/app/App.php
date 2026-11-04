@@ -154,6 +154,67 @@ final class Transactions
             style: NumberFormatter::DECIMAL
         );
 
+        $transactions = array_map(
+            callback: function (
+                    array $transaction
+                ) use (&$formatLocale): array {
+                    $transaction['Description'] = preg_replace(
+                            pattern: '/\s/',
+                            replacement: '',
+                            subject: $transaction['Description']
+                        );
+
+                    $transaction['Date'] = new IntlDateFormatter(
+                            locale: $formatLocale,
+                            dateType: IntlDateFormatter::SHORT,
+                            timeType: IntlDateFormatter::NONE,
+                            timezone: 'UTC',
+                            calendar: IntlDateFormatter::GREGORIAN
+                        )
+                        ->format(
+                            datetime: new DateTimeImmutable(
+                                datetime: $transaction['Date'],
+                                timezone: new DateTimeZone(timezone: 'UTC')
+                            )
+                        );
+
+                    $currrencyAmount = new NumberFormatter(
+                            locale: $formatLocale,
+                            style: NumberFormatter::DECIMAL
+                        )
+                        ->format(
+                            num: $transaction['Amount']
+                        );
+                    
+                    $transaction['Amount'] = $currrencyAmount;
+
+                    $transaction['Operation'] =
+                        $transaction['Amount'] < 0
+                            ? 'Withdrawal'
+                            : 'Deposit';
+
+                    return $transaction;
+                },
+            array: $this->transactions
+        );
+
+        return [
+            'Transactions' => [...$transactions]
+        ];
+    }
+
+    public function totals(string $formatLocale): array
+    {
+        $formatLocale = Locale::canonicalize(locale: $formatLocale)
+            ?? throw new IntlException(
+                message: "Parameter (locale: '{$formatLocale}') is not a valide locale identifier."
+            );
+
+        $currencyFormatter = new NumberFormatter(
+            locale: $formatLocale,
+            style: NumberFormatter::DECIMAL
+        );
+
         $deposits = [];
         $withdrawls = [];
 
