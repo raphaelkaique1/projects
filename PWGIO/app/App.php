@@ -91,7 +91,7 @@ final class Transactions
 
         $this->transactions = array_map(
             callback: function (array $transaction) use(&$documentLocale, &$headers): array {
-                $dateFormatted = (int) new IntlDateFormatter(
+                $timestamp = (int) new IntlDateFormatter(
                         locale: $documentLocale,
                         dateType: IntlDateFormatter::SHORT,
                         timeType: IntlDateFormatter::NONE,
@@ -107,7 +107,7 @@ final class Transactions
                         pattern: 'yyyy-MM-dd'
                     )
                     ->format(
-                        datetime: $dateFormatted
+                        datetime: $timestamp
                     );
 
                 $transaction[1] = (int) ($transaction[1] ?? 0);
