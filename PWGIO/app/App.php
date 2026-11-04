@@ -205,56 +205,42 @@ final class Transactions
         $deposits = [];
         $withdrawls = [];
 
-        $transactions = array_map(
+        array_map(
             callback: function (
                     array $transaction
                 ) use (&$deposits, &$withdrawls): void {
-                    $transaction['Operation'] === 'Withdrawal'
-                        ? $withdrawls[] = $transaction['Amount']
-                        : $deposits[] = $transaction['Amount'];
+                    $save = function (
+                        array &$list
+                    ) use (&$transaction): void {
+                        $list['TotalValue'][] = $transaction['Amount'];
+
+                        $list[$transaction['Description']] = [
+                                'Date' => $transaction['Date'],
+                                'Check' => $transaction['Check'],
+                                'Amount' => $transaction['Amount'],
+                                'Currency' => $transaction['Currency']
+                            ];
+                    };
+
+                    $transaction['Operation'] === 'Deposit'
+                        ? $save(list: $deposits)
+                        : $save(list: $withdrawls);
                 },
             array: $this->transactions['Transactions']
         );
 
         return [
-            'Deposits' => $deposits,
-            'Withdrawals' => $withdrawls
-        ];
-
-        [$deposits['Total_Qnt'], $deposits['Total_Value']] = [
-            count(value: $deposits['Formatted']),
-            $currencyFormatter->format(
-                num: $depositsTotal = array_sum(array: $deposits['Original'])
-            )
-        ];
-
-        [$withdrawls['Total_Qnt'], $withdrawls['Total_Value']] = [
-            count(value: $withdrawls['Formatted']),
-            $currencyFormatter->format(
-                num: $withdrawlsTotal = array_sum(array: $withdrawls['Original'])
-            )
-        ];
-
-        return [
-            'Transactions' => [...$transactions],
             'Deposits' => [
-                'Total_Qnt' => $deposits['Total_Qnt'],
-                'Total_Value' => $deposits['Total_Value'],
-                ...$deposits['Formatted']
+                'TotalQnty' => count(value: $deposits),
+                'TotalValue' => array_sum(array: $deposits['TotalValue']),
+                //'Transactions' => $deposits
             ],
-            'Withdrawls' => [
-                'Total_Qnt' => $withdrawls['Total_Qnt'],
-                'Total_Value' => $withdrawls['Total_Value'],
-                ...$withdrawls['Formatted']
+            'Withdrawals' => [
+                'TotalQnty' => count(value: $withdrawls),
+                'TotalValue' => array_sum(array: $withdrawls['TotalValue']),
+                //'Transactions' => $withdrawls
             ],
-            'Balance' => 
-                $currencyFormatter->format(
-                    num: (float) \bcsub(
-                        num1: (string) $depositsTotal,
-                        num2: (string) -$withdrawlsTotal,
-                        scale: 2
-                    )
-                )
+            'Balance' => '0'
         ];
     }
 }
