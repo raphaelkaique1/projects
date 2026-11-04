@@ -61,7 +61,7 @@ final class Transactions
         }
     }
 
-    public function normalize(string $documentLocale): array
+    public function normalize(string $documentLocale): self
     {
         $documentLocale = Locale::canonicalize(locale: $documentLocale)
             ?? throw new IntlException(
@@ -89,7 +89,7 @@ final class Transactions
 
         $headers[] = 'Currency';
 
-        return array_map(
+        $this->transactions = array_map(
             callback: function (array $transaction) use(&$documentLocale, &$headers): array {
                 $dateFormatted = (int) new IntlDateFormatter(
                         locale: $documentLocale,
@@ -136,8 +136,9 @@ final class Transactions
             },
             array: $this->transactions
         );
+
+        return $this;
     }
-}
 
 function format(array $transactions): array
 {
