@@ -23,6 +23,6 @@ $transactions = new Transactions(
     )
     ->normalize(documentLocale: 'en_US');
 
-var_dump($transactions);
+var_dump($transactions->format('pt_BR'));
 
 exit;

@@ -13,6 +13,8 @@ namespace App;
 use Locale,
     NumberFormatter,
     IntlDateFormatter,
+    DateTimeImmutable,
+    DateTimeZone,
     IntlException;
 
 final class Transactions
@@ -140,129 +142,127 @@ final class Transactions
         return $this;
     }
 
-function format(array $transactions): array
-{
+    public function format(string $formatLocale): array
+    {
+        $formatLocale = Locale::canonicalize(locale: $formatLocale)
+            ?? throw new IntlException(
+                message: "Parameter (locale: '{$formatLocale}') is not a valide locale identifier."
+            );
 
-    /**
-        (
-            fn(float $value): string|false => (new \NumberFormatter(
-                locale: $this->locale,
-                style: \NumberFormatter::DECIMAL
-            ))->format(
-                num: $value
-            )
+        $currencyFormatter = new NumberFormatter(
+            locale: $formatLocale,
+            style: NumberFormatter::DECIMAL
         );
-     */
 
-    $deposits = [];
-    $withdrawls = [];
+        $deposits = [];
+        $withdrawls = [];
 
-    array_walk(
-        array: $transactions,
-        callback: function (
-                array $transaction
-            ) use (&$deposits, &$withdrawls): array {
+        $transactions = array_map(
+            callback: function (
+                    array $transaction
+                ) use (&$formatLocale, &$deposits, &$withdrawls): array {
 
-                $currency = 'BRL';
+                    $save = static function (
+                        array &$list,
+                        string &$description,
+                        float &$originalAmount,
+                        string &$formatedAmount,
+                        string $operation
+                    ): string {
+                        $list['Original'][] = $originalAmount;
+                        $list['Formatted'][$description] = $formatedAmount;
 
-                $save = static function (
-                    array &$list,
-                    float &$amount,
-                    string &$description,
-                    string &$original,
-                    string $operation
-                ): string {
-                    $list['Formatted'][] = $amount;
-                    $list['Original'][$description] = $original;
+                        return $operation;
+                    };
 
-                    return $operation;
-                };
-
-                $amount = (new \NumberFormatter(
-                    locale: 'pt_BR',
-                    style: \NumberFormatter::DECIMAL
-                ))->parseCurrency(
-                    string: $transaction['Amount'],
-                    currency: $currency
-                );
-
-                $description = preg_replace(
-                    pattern: '/\s/',
-                    replacement: '_',
-                    subject: $transaction['Description']
-                );
-
-                $transaction['Operation'] =
-                    str_contains(
-                        haystack: $transaction['Amount'],
-                        needle: '-'
-                    )
-                        ? $save(
-                            list: $withdrawls,
-                            amount: $amount,
-                            description: $description,
-                            original: $transaction['Amount'],
-                            operation: 'Withdrawal'
+                    $transaction['Date'] = new IntlDateFormatter(
+                            locale: $formatLocale,
+                            dateType: IntlDateFormatter::SHORT,
+                            timeType: IntlDateFormatter::NONE,
+                            timezone: 'UTC',
+                            calendar: IntlDateFormatter::GREGORIAN
                         )
-                        : $save(
-                            list: $deposits,
-                            amount: $amount,
-                            description: $description,
-                            original: $transaction['Amount'],
-                            operation: 'Deposit'
+                        ->format(
+                            datetime: new DateTimeImmutable(
+                                datetime: $transaction['Date'],
+                                timezone: new DateTimeZone(timezone: 'UTC')
+                            )
                         );
 
-                return $transaction;
-            }
-    );
+                    $currrencyAmount = new NumberFormatter(
+                            locale: $formatLocale,
+                            style: NumberFormatter::DECIMAL
+                        )
+                        ->format(
+                            num: $transaction['Amount']
+                        );
 
-    [$deposits['Total_Qnt'], $deposits['Total_Value']] = [
-        count(value: $deposits['Original']),
-        (new \NumberFormatter(
-            locale: 'pt_BR',
-            style: \NumberFormatter::CURRENCY
-        ))->formatCurrency(
-            amount: $depositsValue = array_sum(array: $deposits['Formatted']),
-            currency: 'BRL'
-        )
-    ];
+                    $transaction['Description'] = preg_replace(
+                        pattern: '/\s/',
+                        replacement: '',
+                        subject: $transaction['Description']
+                    );
 
-    [$withdrawls['Total_Qnt'], $withdrawls['Total_Value']] = [
-        count(value: $withdrawls['Original']),
-        (new \NumberFormatter(
-            locale: 'pt_BR',
-            style: \NumberFormatter::CURRENCY
-        ))->formatCurrency(
-            amount: $withdrawlsValue = array_sum(array: $withdrawls['Formatted']),
-            currency: 'BRL'
-        )
-    ];
+                    $transaction['Operation'] =
+                        $transaction['Amount'] < 0
+                            ? $save(
+                                list: $withdrawls,
+                                description: $transaction['Description'],
+                                formatedAmount: $currrencyAmount,
+                                originalAmount: $transaction['Amount'],
+                                operation: 'Withdrawal'
+                            )
+                            : $save(
+                                list: $deposits,
+                                description: $transaction['Description'],
+                                formatedAmount: $currrencyAmount,
+                                originalAmount: $transaction['Amount'],
+                                operation: 'Deposit'
+                            );
+                    
+                    $transaction['Amount'] = $currrencyAmount;
 
-    return [
-        'Transactions' => [...$transactions],
-        'Deposits' => [
-            'Total_Qnt' => $deposits['Total_Qnt'],
-            'Total_Value' => $deposits['Total_Value'],
-            ...$deposits['Original']
-        ],
-        'Withdrawls' => [
-            'Total_Qnt' => $withdrawls['Total_Qnt'],
-            'Total_Value' => $withdrawls['Total_Value'],
-            ...$withdrawls['Original']
-        ],
-        'Balance' => 
-            (new \NumberFormatter(
-                locale: 'pt_BR',
-                style: \NumberFormatter::CURRENCY
-            ))->formatCurrency(
-                amount: (float) bcsub(
-                    num1: (string) $depositsValue,
-                    num2: (string) -$withdrawlsValue,
-                    scale: 2
-                ),
-                currency: 'BRL'
+                    return $transaction;
+                },
+            array: $this->transactions
+        );
+
+        [$deposits['Total_Qnt'], $deposits['Total_Value']] = [
+            count(value: $deposits['Formatted']),
+            $currencyFormatter->format(
+                num: $depositsTotal = array_sum(array: $deposits['Original'])
             )
-    ];
+        ];
+
+        [$withdrawls['Total_Qnt'], $withdrawls['Total_Value']] = [
+            count(value: $withdrawls['Formatted']),
+            $currencyFormatter->format(
+                num: $withdrawlsTotal = array_sum(array: $withdrawls['Original'])
+            )
+        ];
+
+        return [
+            'Transactions' => [...$transactions],
+            'Deposits' => [
+                'Total_Qnt' => $deposits['Total_Qnt'],
+                'Total_Value' => $deposits['Total_Value'],
+                ...$deposits['Formatted']
+            ],
+            'Withdrawls' => [
+                'Total_Qnt' => $withdrawls['Total_Qnt'],
+                'Total_Value' => $withdrawls['Total_Value'],
+                ...$withdrawls['Formatted']
+            ],
+            'Balance' => 
+                $currencyFormatter->format(
+                    num: (float) \bcsub(
+                        num1: (string) $depositsTotal,
+                        num2: (string) -$withdrawlsTotal,
+                        scale: 2
+                    )
+                )
+        ];
+    }
 }
 
 function setJSON(array $transactions): string
