@@ -125,11 +125,11 @@ final class Transactions
                     );
 
                 $transaction[4] = (string) new NumberFormatter(
-                        $documentLocale,
-                        NumberFormatter::CURRENCY
+                        locale: $documentLocale,
+                        style: NumberFormatter::CURRENCY
                     )
                     ->getTextAttribute(
-                        NumberFormatter::CURRENCY_CODE
+                        attribute: NumberFormatter::CURRENCY_CODE
                     );
 
                 return array_combine(keys: $headers, values: $transaction);
