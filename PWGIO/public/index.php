@@ -21,8 +21,9 @@ header(
 $transactions = new Transactions(
         dirPath: FILES_PATH
     )
-    ->normalize(documentLocale: 'en_US');
+    ->normalize(documentLocale: 'en_US')
+    ->format('pt_BR');
 
-var_dump($transactions->format('pt_BR'));
+var_dump($transactions->totals());
 
 exit;

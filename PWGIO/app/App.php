@@ -208,72 +208,18 @@ final class Transactions
         $transactions = array_map(
             callback: function (
                     array $transaction
-                ) use (&$formatLocale, &$deposits, &$withdrawls): array {
-
-                    $save = static function (
-                        array &$list,
-                        string &$description,
-                        float &$originalAmount,
-                        string &$formatedAmount,
-                        string $operation
-                    ): string {
-                        $list['Original'][] = $originalAmount;
-                        $list['Formatted'][$description] = $formatedAmount;
-
-                        return $operation;
-                    };
-
-                    $transaction['Date'] = new IntlDateFormatter(
-                            locale: $formatLocale,
-                            dateType: IntlDateFormatter::SHORT,
-                            timeType: IntlDateFormatter::NONE,
-                            timezone: 'UTC',
-                            calendar: IntlDateFormatter::GREGORIAN
-                        )
-                        ->format(
-                            datetime: new DateTimeImmutable(
-                                datetime: $transaction['Date'],
-                                timezone: new DateTimeZone(timezone: 'UTC')
-                            )
-                        );
-
-                    $currrencyAmount = new NumberFormatter(
-                            locale: $formatLocale,
-                            style: NumberFormatter::DECIMAL
-                        )
-                        ->format(
-                            num: $transaction['Amount']
-                        );
-
-                    $transaction['Description'] = preg_replace(
-                        pattern: '/\s/',
-                        replacement: '',
-                        subject: $transaction['Description']
-                    );
-
-                    $transaction['Operation'] =
-                        $transaction['Amount'] < 0
-                            ? $save(
-                                list: $withdrawls,
-                                description: $transaction['Description'],
-                                formatedAmount: $currrencyAmount,
-                                originalAmount: $transaction['Amount'],
-                                operation: 'Withdrawal'
-                            )
-                            : $save(
-                                list: $deposits,
-                                description: $transaction['Description'],
-                                formatedAmount: $currrencyAmount,
-                                originalAmount: $transaction['Amount'],
-                                operation: 'Deposit'
-                            );
-                    
-                    $transaction['Amount'] = $currrencyAmount;
-
-                    return $transaction;
+                ) use (&$deposits, &$withdrawls): void {
+                    $transaction['Operation'] === 'Withdrawal'
+                        ? $withdrawls[] = $transaction['Amount']
+                        : $deposits[] = $transaction['Amount'];
                 },
-            array: $this->transactions
+            array: $this->transactions['Transactions']
         );
+
+        return [
+            'Deposits' => $deposits,
+            'Withdrawals' => $withdrawls
+        ];
 
         [$deposits['Total_Qnt'], $deposits['Total_Value']] = [
             count(value: $deposits['Formatted']),
