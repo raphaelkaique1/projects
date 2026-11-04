@@ -142,7 +142,7 @@ final class Transactions
         return $this;
     }
 
-    public function format(string $formatLocale): array
+    public function format(string $formatLocale): self
     {
         $formatLocale = Locale::canonicalize(locale: $formatLocale)
             ?? throw new IntlException(
@@ -193,23 +193,15 @@ final class Transactions
             array: $this->transactions
         );
 
-        return [
+        $this->transactions = [
             'Transactions' => [...$transactions]
         ];
+
+        return $this;
     }
 
-    public function totals(string $formatLocale): array
+    public function totals(): array
     {
-        $formatLocale = Locale::canonicalize(locale: $formatLocale)
-            ?? throw new IntlException(
-                message: "Parameter (locale: '{$formatLocale}') is not a valide locale identifier."
-            );
-
-        $currencyFormatter = new NumberFormatter(
-            locale: $formatLocale,
-            style: NumberFormatter::DECIMAL
-        );
-
         $deposits = [];
         $withdrawls = [];
 
