@@ -61,9 +61,12 @@ final class Transactions
         }
     }
 
-    public function normalize(?string $documentLocale = null): array
+    public function normalize(string $documentLocale): array
     {
-        $documentLocale ??= $this->locale;
+        $documentLocale = Locale::canonicalize(locale: $documentLocale)
+            ?? throw new IntlException(
+                message: "Parameter (locale: '{$documentLocale}') is not a valide locale identifier."
+            );
 
         $headers
             = array_shift(array: $this->transactions)
