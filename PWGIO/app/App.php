@@ -213,7 +213,7 @@ final class Transactions
 
         $floatArrayReduce = fn(
                 array $floatToStringArray,
-                string $operation
+                callable $operation
             ): string => array_reduce(
                     array: $floatToStringArray,
                     callback: fn(
