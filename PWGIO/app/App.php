@@ -152,8 +152,10 @@ final class Transactions
         return $this;
     }
 
-    public function format(string $formatLocale): self
+    public function format(?string $formatLocale = null): self
     {
+        $formatLocale ??= $this->locales['documentLocale'];
+
         $this->locales['formatLocale'] =
             $formatLocale = Locale::canonicalize(locale: $formatLocale)
                 ?? throw new IntlException(
