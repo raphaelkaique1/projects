@@ -277,7 +277,7 @@ final class Transactions
 
         return [
             'Deposits' => [
-                'TotalQnty' => count(value: $deposits['Values']),
+                'TotalQnt' => count(value: $deposits['Values']),
                 'TotalValue' => $formatter->format(
                     num: (float) $depositsTotalValue = $floatArrayReduce(
                         floatToStringArray: array_shift(array: $deposits),
@@ -288,7 +288,7 @@ final class Transactions
                 'Transactions' => $deposits
             ],
             'Withdrawals' => [
-                'TotalQnty' => count(value: $withdrawls['Values']),
+                'TotalQnt' => count(value: $withdrawls['Values']),
                 'TotalValue' => $formatter->format(
                     num: (float) $withdrawlsTotalValue = $floatArrayReduce(
                         floatToStringArray: array_shift(array: $withdrawls),
