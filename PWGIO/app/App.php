@@ -75,8 +75,10 @@ final class Transactions
                     message: "Parameter (locale: '{$documentLocale}') is not a valide locale identifier."
                 );
 
+        $originalHeaders = array_shift(array: $this->transactions);
+
         $headers
-            = array_shift(array: $this->transactions)
+            = $originalHeaders
             |> (
                 fn(array $array): array => preg_replace(
                     pattern: '/[^\p{L}]/u',
@@ -141,7 +143,10 @@ final class Transactions
 
                 return array_combine(keys: $headers, values: $transaction);
             },
-            array: $this->transactions
+            array: array_filter(
+                array: $this->transactions,
+                callback: fn(array $transaction): bool => $transaction !== $originalHeaders
+            )
         );
 
         return $this;
