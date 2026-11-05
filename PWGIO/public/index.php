@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Transactions;
+use function App\setJSON;
 
 $root = dirname(__DIR__) . DIRECTORY_SEPARATOR;
 
@@ -24,6 +25,6 @@ $transactions = new Transactions(
     ->normalize(documentLocale: 'en_US')
     ->format(formatLocale: 'pt_BR');
 
-var_dump($transactions->totals());
+echo setJSON($transactions->totals());
 
 exit;

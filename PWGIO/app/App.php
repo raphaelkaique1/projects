@@ -312,10 +312,10 @@ final class Transactions
     }
 }
 
-function setJSON(array $transactions): string
+function setJSON(object|array $data): string
 {
     return ($json = json_encode(
-        value: (object) $transactions,
+        value: (object) $data,
         flags: JSON_UNESCAPED_UNICODE
             | JSON_UNESCAPED_SLASHES
             | JSON_THROW_ON_ERROR
