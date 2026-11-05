@@ -22,7 +22,7 @@ $transactions = new Transactions(
         dirPath: FILES_PATH
     )
     ->normalize(documentLocale: 'en_US')
-    ->format('pt_BR');
+    ->format(formatLocale: 'pt_BR');
 
 var_dump($transactions->totals());
 

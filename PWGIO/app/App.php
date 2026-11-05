@@ -21,6 +21,10 @@ final class Transactions
 {
     public private(set) array $files = [];
     public private(set) array $transactions = [];
+    private array $locales = [
+        'documentLocale' => '',
+        'formatLocale' => ''
+    ];
 
     public function __construct(
         public private(set) string $dirPath
@@ -65,10 +69,11 @@ final class Transactions
 
     public function normalize(string $documentLocale): self
     {
-        $documentLocale = Locale::canonicalize(locale: $documentLocale)
-            ?? throw new IntlException(
-                message: "Parameter (locale: '{$documentLocale}') is not a valide locale identifier."
-            );
+        $this->locales['documentLocale'] =
+            $documentLocale = Locale::canonicalize(locale: $documentLocale)
+                ?? throw new IntlException(
+                    message: "Parameter (locale: '{$documentLocale}') is not a valide locale identifier."
+                );
 
         $headers
             = array_shift(array: $this->transactions)
@@ -144,10 +149,11 @@ final class Transactions
 
     public function format(string $formatLocale): self
     {
-        $formatLocale = Locale::canonicalize(locale: $formatLocale)
-            ?? throw new IntlException(
-                message: "Parameter (locale: '{$formatLocale}') is not a valide locale identifier."
-            );
+        $this->locales['formatLocale'] =
+            $formatLocale = Locale::canonicalize(locale: $formatLocale)
+                ?? throw new IntlException(
+                    message: "Parameter (locale: '{$formatLocale}') is not a valide locale identifier."
+                );
 
         $transactions = array_map(
             callback: function (
@@ -205,14 +211,54 @@ final class Transactions
         $deposits = [];
         $withdrawls = [];
 
+        $floatArrayReduce = fn(
+                array $floatToStringArray,
+                string $operation
+            ): string => array_reduce(
+                    array: $floatToStringArray,
+                    callback: fn(
+                            string $accumulator,
+                            string $newValue
+                        ): string => $operation(
+                            num1: (string) $accumulator,
+                            num2: (string) $newValue,
+                            scale: 2
+                        ),
+                    initial: '0'
+                );
+
+        $formatter = new NumberFormatter(
+                locale: $this->locales['formatLocale'],
+                style: NumberFormatter::DECIMAL
+            );
+
+        $currentCurrency = new NumberFormatter(
+                locale: $this->locales['documentLocale'],
+                style: NumberFormatter::CURRENCY
+            )
+            ->getTextAttribute(
+                attribute: NumberFormatter::CURRENCY_CODE
+            );
+
+        foreach (
+            [
+                NumberFormatter::MIN_FRACTION_DIGITS,
+                NumberFormatter::MAX_FRACTION_DIGITS
+            ] as $attribute
+        ) {
+            $formatter->setAttribute($attribute, 2);
+        }
+
         array_map(
             callback: function (
                     array $transaction
-                ) use (&$deposits, &$withdrawls): void {
+                ) use (&$deposits, &$withdrawls, &$formatter): void {
                     $save = function (
                         array &$list
-                    ) use (&$transaction): void {
-                        $list['TotalValue'][] = $transaction['Amount'];
+                    ) use (&$transaction, &$formatter): void {
+                        $list['Values'][] = (string) $formatter->parse(
+                                string: $transaction['Amount']
+                            );
 
                         $list[$transaction['Description']] = [
                                 'Date' => $transaction['Date'],
@@ -231,16 +277,37 @@ final class Transactions
 
         return [
             'Deposits' => [
-                'TotalQnty' => count(value: $deposits),
-                'TotalValue' => array_sum(array: $deposits['TotalValue']),
-                //'Transactions' => $deposits
+                'TotalQnty' => count(value: $deposits['Values']),
+                'TotalValue' => $formatter->format(
+                    num: (float) $depositsTotalValue = $floatArrayReduce(
+                        floatToStringArray: array_shift(array: $deposits),
+                        operation: '\bcadd'
+                    )
+                ),
+                'Currency' => $currentCurrency,
+                'Transactions' => $deposits
             ],
             'Withdrawals' => [
-                'TotalQnty' => count(value: $withdrawls),
-                'TotalValue' => array_sum(array: $withdrawls['TotalValue']),
-                //'Transactions' => $withdrawls
+                'TotalQnty' => count(value: $withdrawls['Values']),
+                'TotalValue' => $formatter->format(
+                    num: (float) $withdrawlsTotalValue = $floatArrayReduce(
+                        floatToStringArray: array_shift(array: $withdrawls),
+                        operation: '\bcadd'
+                    )
+                ),
+                'Currency' => $currentCurrency,
+                'Transactions' => $withdrawls
             ],
-            'Balance' => '0'
+            'Balance' => [
+                'Total' => $formatter->format(
+                    num: (float) \bcadd(
+                        num1: $depositsTotalValue,
+                        num2: $withdrawlsTotalValue,
+                        scale: 2
+                    )
+                ),
+                'Currency' => $currentCurrency
+            ]
         ];
     }
 }
