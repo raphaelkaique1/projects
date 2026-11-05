@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Transactions,
+    App\Http,
     Views\JSON;
 
 $root = dirname(path: __DIR__) . DIRECTORY_SEPARATOR;
@@ -12,6 +13,7 @@ define(constant_name: 'FILES_PATH', value: $root . 'transaction_files' . DIRECTO
 define(constant_name: 'VIEWS_PATH', value: $root . 'views' . DIRECTORY_SEPARATOR);
 
 require_once APP_PATH . 'App.php';
+require_once APP_PATH . 'Helpers.php';
 require_once VIEWS_PATH . 'JSON.php';
 
 $transactions = new Transactions(
@@ -20,11 +22,10 @@ $transactions = new Transactions(
     ->normalize(documentLocale: 'en_US')
     ->format(formatLocale: 'pt_BR');
 
-header(
-    header: 'Content-Type: application/json',
-    response_code: 200
+Http::response(
+    data: JSON::setJSON(data: $transactions->totals()),
+    contentType: 'application/json',
+    responseCode: 200
 );
-
-echo JSON::setJSON(data: $transactions->totals());
 
 exit;
