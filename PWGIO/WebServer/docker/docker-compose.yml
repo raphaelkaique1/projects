@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: WebServer-app
+    restart: always
+    working_dir: /var/www
+    volumes:
+      - ../src:/var/www
+
+  nginx:
+    image: nginx:stable-alpine3.24-perl
+    container_name: WebServer-nginx
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ../src:/var/www
+      - ./nginx:/etc/nginx/conf.d
