@@ -1,4 +1,4 @@
-FROM php:8.5.12-debian13-fpm-fips
+FROM phpdockerio/php:8.5-fpm
 
 RUN apt-get update && \
     apt-get install -y \

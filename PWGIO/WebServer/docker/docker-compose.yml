@@ -14,7 +14,7 @@ services:
     container_name: WebServer-nginx
     restart: always
     ports:
-      - "8080:80"
+      - "8443:80"
     volumes:
       - ../src:/var/www
       - ./nginx:/etc/nginx/conf.d
