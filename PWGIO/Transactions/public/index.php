@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Transactions,
-    App\Http,
-    Views\JSON;
+use App\{Transactions, Http};
+use Views\JSON;
 
 $root = dirname(path: __DIR__) . DIRECTORY_SEPARATOR;
 
