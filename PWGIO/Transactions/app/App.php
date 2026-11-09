@@ -282,34 +282,37 @@ final class Transactions
             array: $this->transactions['Transactions']
         );
 
+        $arrayTotalValue = [];
+
+        $array = function(string $key, array &$array) use(
+            &$arrayTotalValue,
+            $formatter,
+            $floatArrayReduce,
+            $currentCurrency
+        ): array {
+            return [
+                $key => [
+                    'TotalQnt' => count(value: $array['Values']),
+                    'TotalValue' => $formatter->format(
+                        num: $arrayTotalValue[$key] = (float) $floatArrayReduce(
+                            floatToStringArray: array_shift(array: $array),
+                            operation: '\bcadd'
+                        )
+                    ),
+                    'Currency' => $currentCurrency,
+                    'Transactions' => $array
+                ]
+            ];
+        };
+
         return [
-            'Deposits' => [
-                'TotalQnt' => count(value: $deposits['Values']),
-                'TotalValue' => $formatter->format(
-                    num: (float) $depositsTotalValue = $floatArrayReduce(
-                        floatToStringArray: array_shift(array: $deposits),
-                        operation: '\bcadd'
-                    )
-                ),
-                'Currency' => $currentCurrency,
-                'Transactions' => $deposits
-            ],
-            'Withdrawals' => [
-                'TotalQnt' => count(value: $withdrawls['Values']),
-                'TotalValue' => $formatter->format(
-                    num: (float) $withdrawlsTotalValue = $floatArrayReduce(
-                        floatToStringArray: array_shift(array: $withdrawls),
-                        operation: '\bcadd'
-                    )
-                ),
-                'Currency' => $currentCurrency,
-                'Transactions' => $withdrawls
-            ],
+            ...$array(key: 'Deposits', array: $deposits),
+            ...$array(key: 'Withdrawals', array: $withdrawls),
             'Balance' => [
                 'Total' => $formatter->format(
-                    num: (float) \bcadd(
-                        num1: $depositsTotalValue,
-                        num2: $withdrawlsTotalValue,
+                    num: (float) \bcsub(
+                        num1: (string) $arrayTotalValue['Deposits'],
+                        num2: (string) abs(num: $arrayTotalValue['Withdrawals']),
                         scale: 2
                     )
                 ),
