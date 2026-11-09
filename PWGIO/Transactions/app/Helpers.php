@@ -11,7 +11,6 @@ final class Http
         string $contentType,
         int $responseCode
     ): void {
-
         header(
             header: "Content-Type: {$contentType}",
             response_code: $responseCode
