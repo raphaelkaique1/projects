@@ -19,11 +19,11 @@ require_once VIEWS_PATH . 'JSON.php';
 $transactions = new Transactions(
         dirPath: FILES_PATH
     )
-    ->normalize(documentLocale: 'en_US')
-    ->format(formatLocale: 'pt_BR');
+    ?->normalize(documentLocale: 'en_US')
+    ?->format(formatLocale: 'pt_BR');
 
 Http::response(
-    data: JSON::setJSON(data: $transactions->totals()),
+    data: JSON::setJSON(data: $transactions?->totals()),
     contentType: 'application/json',
     responseCode: 200
 );
