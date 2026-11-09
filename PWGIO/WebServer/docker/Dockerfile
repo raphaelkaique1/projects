@@ -7,4 +7,6 @@ RUN apt-get update && \
     zip \
     unzip
 
+COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
+
 WORKDIR /var/www
