@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-echo '<pre>';
-var_dump($_SERVER);
-echo '</pre>';
+require __DIR__ . '/../vendor/autoload.php';
 
-phpinfo();
+$id = new \Ramsey\Uuid\UuidFactory();
+
+echo $id->uuid4();
