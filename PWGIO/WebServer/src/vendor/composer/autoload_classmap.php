@@ -6,7 +6,8 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'App\\CSRF' => $baseDir . '/app/CSRF.php',
+    'App\\Auth\\CSRF' => $baseDir . '/app/Auth/CSRF.php',
+    'App\\Enums\\Status' => $baseDir . '/app/Enums/Status.php',
     'Brick\\Math\\BigDecimal' => $vendorDir . '/brick/math/src/BigDecimal.php',
     'Brick\\Math\\BigInteger' => $vendorDir . '/brick/math/src/BigInteger.php',
     'Brick\\Math\\BigNumber' => $vendorDir . '/brick/math/src/BigNumber.php',

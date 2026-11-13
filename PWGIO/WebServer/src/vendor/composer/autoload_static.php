@@ -46,7 +46,8 @@ class ComposerStaticInit7422faf8f33d1f1cdfca8767e0ffc0f4
     );
 
     public static $classMap = array (
-        'App\\CSRF' => __DIR__ . '/../..' . '/app/CSRF.php',
+        'App\\Auth\\CSRF' => __DIR__ . '/../..' . '/app/Auth/CSRF.php',
+        'App\\Enums\\Status' => __DIR__ . '/../..' . '/app/Enums/Status.php',
         'Brick\\Math\\BigDecimal' => __DIR__ . '/..' . '/brick/math/src/BigDecimal.php',
         'Brick\\Math\\BigInteger' => __DIR__ . '/..' . '/brick/math/src/BigInteger.php',
         'Brick\\Math\\BigNumber' => __DIR__ . '/..' . '/brick/math/src/BigNumber.php',
