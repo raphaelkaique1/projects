@@ -5,4 +5,5 @@ This repo contains some projects developed through self-study.
 - [x] **PHP** Object Oriented
 - [x] **Docker + NGINX**
 - [x] **Composer**
-- [ ] **HTMX + TailwindCSS + PHP + MongoDB** CRUD FullStack System
+- [ ] **MVC**
+- [ ] **HTMX + TailwindCSS + PHP + MongoDB** - CRUD FullStack System
