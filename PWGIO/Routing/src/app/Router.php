@@ -41,6 +41,7 @@ final class Router
      * @return mixed Handler response.
      *
      * @throws RouteNotFoundException When the requested route does not exist.
+     * @throws \BadMethodCallException When the requested method does not exist.
      */
     public function resolve(string $requestUri): mixed
     {
