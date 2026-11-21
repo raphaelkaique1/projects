@@ -6,7 +6,7 @@ namespace App\Classes;
 
 class Home
 {
-    public function index(): string
+    public static function index(): string
     {
         return 'home';
     }

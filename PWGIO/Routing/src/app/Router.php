@@ -27,7 +27,7 @@ final class Router
      *
      * @return self
      */
-    public function register(string $route, callable $action): self
+    public function register(string $route, callable|array $action): self
     {
         $this->routes[$route] = $action;
         return $this;

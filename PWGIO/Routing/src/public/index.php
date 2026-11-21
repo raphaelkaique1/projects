@@ -9,7 +9,7 @@ $router = new App\Router();
 
 $router
     ->register(route: '/', action: [App\Classes\Home::class, 'index'])
-    ->register(route: '/users', action: fn(): string => 'users');
+    ->register(route: '/users', action: [App\Classes\Users::class, 'all']);
 
 try {
     $page = $router->resolve(requestUri: $_SERVER['REQUEST_URI']) and
