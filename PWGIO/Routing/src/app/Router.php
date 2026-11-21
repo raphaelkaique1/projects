@@ -38,7 +38,7 @@ final class Router
      *
      * @param string $requestUri HTTP request URI.
      *
-     * @return string Handler response.
+     * @return mixed Handler response.
      *
      * @throws RouteNotFoundException When the requested route does not exist.
      */

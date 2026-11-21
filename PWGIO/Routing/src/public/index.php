@@ -1,13 +1,14 @@
 <?php
 
 declare(strict_types = 1);
+use App\Classes\Home;
 
 require_once dirname(path: __DIR__) . '/vendor/autoload.php';
 
 $router = new App\Router();
 
 $router
-    ->register(route: '/', action: fn(): string => 'home')
+    ->register(route: '/', action: [App\Classes\Home::class, 'index'])
     ->register(route: '/users', action: fn(): string => 'users');
 
 try {
