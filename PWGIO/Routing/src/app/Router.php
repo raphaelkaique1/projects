@@ -64,7 +64,7 @@ final class Router
         method_exists(
             object_or_class: $class,
             method: $method
-        ) and $result = $class->$method();
+        ) and $result = $class?->$method();
 
         return $result ?? throw new \BadMethodCallException(
             message: 'Not Implemented',
