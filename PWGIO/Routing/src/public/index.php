@@ -7,12 +7,8 @@ require_once dirname(path: __DIR__) . '/vendor/autoload.php';
 $router = new App\Router();
 
 $router
-    ->register(route: '/', action: function (): string {
-        return 'home';
-    })
-    ->register(route: '/users', action: function (): string {
-        return 'users';
-    });
+    ->register(route: '/', action: fn(): string => 'home')
+    ->register(route: '/users', action: fn(): string => 'users');
 
 try {
     $page = $router->resolve(requestUri: $_SERVER['REQUEST_URI']) and
