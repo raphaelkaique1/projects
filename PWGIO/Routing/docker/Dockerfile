@@ -1,4 +1,4 @@
-FROM phpdockerio/php:8.5-fpm
+FROM php:8.6.0-fpm
 
 COPY --from=composer/composer:latest-bin /composer /usr/bin/composer
 

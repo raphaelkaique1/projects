@@ -7,11 +7,11 @@ require_once dirname(path: __DIR__) . '/vendor/autoload.php';
 $router = new App\Router();
 
 $router
-    ->register(route: '/', action: function (): void {
-        echo 'home';
+    ->register(route: '/', action: function (): string {
+        return 'home';
     })
-    ->register(route: '/users', action: function (): void {
-        echo 'users';
+    ->register(route: '/users', action: function (): string {
+        return 'users';
     });
 
 try {

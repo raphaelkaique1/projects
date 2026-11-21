@@ -42,7 +42,7 @@ final class Router
      *
      * @throws RouteNotFoundException When the requested route does not exist.
      */
-    public function resolve(string $requestUri): string
+    public function resolve(string $requestUri): mixed
     {
         $route = parse_url(
             url: $requestUri,
