@@ -40,6 +40,7 @@ final class Router
      *
      * @return mixed Handler response.
      *
+     * @throws \Uri\InvalidUriException When the requested URI is malformed.
      * @throws RouteNotFoundException When the requested route does not exist.
      * @throws \BadMethodCallException When the requested method does not exist.
      */
@@ -48,6 +49,9 @@ final class Router
         $route = parse_url(
             url: $requestUri,
             component: PHP_URL_PATH
+        ) ?? throw new \Uri\InvalidUriException(
+            message: 'Bad Request',
+            code: 400
         );
         $action = $this->routes[$route] ?? throw new RouteNotFoundException();
 
