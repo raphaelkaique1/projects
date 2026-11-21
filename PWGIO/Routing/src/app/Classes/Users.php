@@ -6,7 +6,7 @@ namespace App\Classes;
 
 class Users
 {
-    public static function all(): string
+    public function all(): string
     {
         return 'users';
     }

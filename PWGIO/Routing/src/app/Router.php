@@ -50,6 +50,20 @@ final class Router
         );
         $action = $this->routes[$route] ?? throw new RouteNotFoundException();
 
-        return $action();
+        if (is_callable(value: $action)) {
+            return $action();
+        }
+
+        is_array(value: $action) and [$class, $method] = $action;
+        class_exists(class: $class) and $class = new $class();
+        method_exists(
+            object_or_class: $class,
+            method: $method
+        ) and $result = $class->$method();
+
+        return $result ?? throw new \BadMethodCallException(
+            message: 'Not Implemented',
+            code: 501
+        );
     }
 }
