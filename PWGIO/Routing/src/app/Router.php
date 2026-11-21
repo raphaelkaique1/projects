@@ -14,7 +14,7 @@ final class Router
      * Each route is associated with a callable
      * that returns the response content.
      *
-     * @var array<string, callable(): string>
+     * @var array<string, array|callable(): mixed>
      */
 
     private array $routes = [];
@@ -23,7 +23,7 @@ final class Router
      * Registers a route and its corresponding handler.
      *
      * @param string $route Route URI.
-     * @param callable(): string $action Route handler.
+     * @param array|callable(): string $action Route handler.
      *
      * @return self
      */

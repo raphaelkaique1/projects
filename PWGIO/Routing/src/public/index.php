@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types = 1);
-use App\Classes\Home;
 
 require_once dirname(path: __DIR__) . '/vendor/autoload.php';
 
