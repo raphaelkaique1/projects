@@ -61,7 +61,8 @@ final class Router
 
         is_array(value: $action) and [$class, $method] = $action;
         class_exists(class: $class) and $class = new $class();
-        method_exists(
+        is_object(value: $class)
+        && method_exists(
             object_or_class: $class,
             method: $method
         ) and $result = $class?->$method();
