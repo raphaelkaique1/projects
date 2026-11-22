@@ -4,47 +4,84 @@ declare(strict_types = 1);
 
 namespace App;
 
-use App\Enums\HttpStatusCode;
+use App\Enums\{
+    HttpStatusCode,
+    HttpRequestMethod
+};
 
 final class Router
 {
     /**
      * Registered application routes.
      *
-     * Each route is associated with a callable
-     * that returns the response content.
+     * Each HTTP request method maps to a collection of routes,
+     * where each route is associated with a callable handler
+     * or a class-method pair.
      *
-     *  * @var array<string, array{0: class-string|object, 1: non-empty-string}|callable(): mixed>
+     * @var array<
+     *     string,
+     *     array<
+     *         string,
+     *         array{0: class-string|object, 1: non-empty-string}|callable(): mixed
+     *     >
+     * >
      */
 
     private array $routes = [];
 
     /**
-     * Registers a route and its corresponding handler.
+     * Registers a route and its corresponding handler for an HTTP method.
      *
+     * @param string $requestMethod HTTP request method.
      * @param string $route Route URI.
      * @param array{0: class-string|object, 1: non-empty-string}|callable(): mixed $action Route handler.
      *
-     * @return self
+     * @return self|null Router instance for method chaining.
      */
-    public function register(string $route, callable|array $action): self
+    private function register(string $requestMethod, string $route, callable|array $action): ?self
     {
-        $this->routes[$route] = $action;
+        $this->routes[$requestMethod][$route] = $action;
+
         return $this;
     }
 
+    public function get(string $route, callable|array $action): ?self
+    {
+        return $this->register(
+            requestMethod: (HttpRequestMethod::GET)(),
+            route: $route,
+            action: $action
+        );
+    }
+
+    public function post(string $route, callable|array $action): ?self
+    {
+        return $this->register(
+            requestMethod: (HttpRequestMethod::POST)(),
+            route: $route,
+            action: $action
+        );
+    }
+
     /**
-     * Resolves the requested URI and executes its handler.
+     * Resolves the requested URI and HTTP method, then executes its handler.
+     *
+     * The URI is parsed to extract its path, which is used together
+     * with the HTTP method to locate the corresponding route handler.
+     *
+     * Handlers can be registered as directly callable values or
+     * as class-method pairs.
      *
      * @param string $requestUri HTTP request URI.
+     * @param string $requestMethod HTTP request method.
      *
-     * @return mixed Handler response.
+     * @return mixed Result returned by the resolved route handler.
      *
      * @throws \Uri\InvalidUriException When the requested URI is malformed.
-     * @throws \App\Exceptions\RouteNotFoundException When the requested route does not exist.
-     * @throws \BadMethodCallException When the requested method does not exist.
+     * @throws \App\Exceptions\RouteNotFoundException When no route matches the requested URI and HTTP method.
+     * @throws \BadMethodCallException When the registered handler cannot be invoked.
      */
-    public function resolve(string $requestUri): mixed
+    public function resolve(string $requestUri, string $requestMethod): mixed
     {
         $route = parse_url(
             url: $requestUri,
@@ -52,7 +89,7 @@ final class Router
         ) ?? throw new \Uri\InvalidUriException(
                 ...(HttpStatusCode::BAD_REQUEST)()
             );
-        $action = $this->routes[$route]
+        $action = $this->routes[$requestMethod][$route]
             ?? throw new \App\Exceptions\RouteNotFoundException(
                 ...(HttpStatusCode::NOT_FOUND)()
             );
