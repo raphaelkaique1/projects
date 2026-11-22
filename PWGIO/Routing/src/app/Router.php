@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace App;
 
-use App\Exceptions\RouteNotFoundException;
+use App\Enums\HttpStatusCode;
 
 final class Router
 {
@@ -41,7 +41,7 @@ final class Router
      * @return mixed Handler response.
      *
      * @throws \Uri\InvalidUriException When the requested URI is malformed.
-     * @throws RouteNotFoundException When the requested route does not exist.
+     * @throws \App\Exceptions\RouteNotFoundException When the requested route does not exist.
      * @throws \BadMethodCallException When the requested method does not exist.
      */
     public function resolve(string $requestUri): mixed
@@ -50,10 +50,12 @@ final class Router
             url: $requestUri,
             component: PHP_URL_PATH
         ) ?? throw new \Uri\InvalidUriException(
-            message: 'Bad Request',
-            code: 400
-        );
-        $action = $this->routes[$route] ?? throw new RouteNotFoundException();
+                ...(HttpStatusCode::BAD_REQUEST)()
+            );
+        $action = $this->routes[$route]
+            ?? throw new \App\Exceptions\RouteNotFoundException(
+                ...(HttpStatusCode::NOT_FOUND)()
+            );
 
         if (is_callable(value: $action)) {
             return $action();
@@ -68,8 +70,7 @@ final class Router
         ) and $result = $class?->$method();
 
         return $result ?? throw new \BadMethodCallException(
-            message: 'Not Implemented',
-            code: 501
+            ...(HttpStatusCode::NOT_IMPLEMENTED)()
         );
     }
 }

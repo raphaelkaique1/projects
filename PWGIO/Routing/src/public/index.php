@@ -2,6 +2,8 @@
 
 declare(strict_types = 1);
 
+use App\Enums\HttpStatusCode;
+
 require_once dirname(path: __DIR__) . '/vendor/autoload.php';
 
 $router = new App\Router();
@@ -12,7 +14,7 @@ $router
 
 try {
     $page = $router->resolve(requestUri: $_SERVER['REQUEST_URI']) and
-    $code = 200;
+    $code = (HttpStatusCode::OK)()['code'];
 } catch (Throwable $error) {
     $page = $error->getMessage() and
     $code = $error->getCode();
