@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace App\Enums;
 
+use App\Exceptions\HttpRequestMethodException;
+
 enum HttpRequestMethod
 {
     case QUERY;
@@ -16,6 +18,8 @@ enum HttpRequestMethod
 
     public function __invoke(): string
     {
-        return $this->name;
+        return $this->name ?? throw new HttpRequestMethodException(
+            message: 'Invalid http request method.'
+        );
     }
 }
