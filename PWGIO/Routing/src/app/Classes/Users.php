@@ -17,7 +17,7 @@ class Users
     {
         return <<<HTML
             <form action="/users/create" method="POST">
-                <label>Name</label>
+                <label for="name">Name</label>
                 <input type="text" name="name"/>
                 <button type="submit">submit</button>
             </form>
