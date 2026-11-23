@@ -38,9 +38,9 @@ final class Router
      *
      * @return self|null Router instance for method chaining.
      */
-    private function register(string $requestMethod, string $route, callable|array $action): ?self
+    private function register(HttpRequestMethod $requestMethod, string $route, callable|array $action): ?self
     {
-        $this->routes[$requestMethod][$route] = $action;
+        $this->routes[$requestMethod()][$route] = $action;
 
         return $this;
     }
@@ -48,7 +48,7 @@ final class Router
     public function get(string $route, callable|array $action): ?self
     {
         return $this->register(
-            requestMethod: (HttpRequestMethod::GET)(),
+            requestMethod: HttpRequestMethod::GET,
             route: $route,
             action: $action
         );
@@ -57,7 +57,7 @@ final class Router
     public function post(string $route, callable|array $action): ?self
     {
         return $this->register(
-            requestMethod: (HttpRequestMethod::POST)(),
+            requestMethod: HttpRequestMethod::POST,
             route: $route,
             action: $action
         );
