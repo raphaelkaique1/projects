@@ -26,7 +26,7 @@ class Users
 
     public function store(): string
     {
-        $post = json_encode(
+        $data = json_encode(
             value: $_POST,
             flags: JSON_THROW_ON_ERROR
             | JSON_UNESCAPED_SLASHES
@@ -36,7 +36,7 @@ class Users
 
         return <<<HTML
         <pre>
-        {$post}
+        {$data}
         </pre>
         HTML;
     }
