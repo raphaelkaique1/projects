@@ -2,14 +2,27 @@
 
 declare(strict_types = 1);
 
+session_start();
+
 use App\Enums\HttpStatusCode;
 
-require_once dirname(path: __DIR__) . '/vendor/autoload.php';
+define(
+    constant_name: 'ROOT_DIR',
+    value: dirname(path: __DIR__)
+);
+
+define(
+    constant_name: 'STORAGE_PATH',
+    value: ROOT_DIR . '/storage'
+);
+
+require_once ROOT_DIR . '/vendor/autoload.php';
 
 $router = new App\Router();
 
 $router
     ->get(route: '/', action: [App\Classes\Home::class, 'index'])
+    ->post(route: '/upload', action: [App\Classes\Home::class, 'upload'])
     ->get(route: '/users', action: [App\Classes\Users::class, 'all'])
     ->get(route: '/users/create', action: [App\Classes\Users::class, 'create'])
     ->post(route: '/users/create', action: [App\Classes\Users::class, 'store']);
