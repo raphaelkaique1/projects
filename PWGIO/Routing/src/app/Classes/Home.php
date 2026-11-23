@@ -20,8 +20,22 @@ class Home
 
     public function upload(): string
     {
+        move_uploaded_file(
+            from: $uploadedFile = $_FILES['file']['tmp_name'],
+            to: $savedFile = ROOT_DIR . DIRECTORY_SEPARATOR . $_FILES['file']['name']
+        );
+
         $file = json_encode(
-            value: $_FILES,
+            value: [
+                [
+                    'from' => $uploadedFile,
+                    ...$_FILES
+                ],
+                [
+                    'to' => $savedFile,
+                    'dir' => pathinfo(path: $savedFile)
+                ]
+            ],
             flags: JSON_THROW_ON_ERROR
             | JSON_UNESCAPED_SLASHES
             | JSON_UNESCAPED_UNICODE
