@@ -42,8 +42,4 @@ header(
     response_code: $code
 );
 
-echo <<<HTML
-    <p>
-        {$page}
-    </p>
-HTML;
+echo $page;
