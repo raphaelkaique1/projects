@@ -22,7 +22,7 @@ class Home
     {
         move_uploaded_file(
             from: $uploadedFile = $_FILES['file']['tmp_name'],
-            to: $savedFile = ROOT_DIR . DIRECTORY_SEPARATOR . $_FILES['file']['name']
+            to: $savedFile = STORAGE_PATH . DIRECTORY_SEPARATOR . $_FILES['file']['name']
         );
 
         $file = json_encode(
