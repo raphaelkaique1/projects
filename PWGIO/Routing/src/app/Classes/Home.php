@@ -26,7 +26,7 @@ class Home
         );
 
         $file = json_encode(
-            value: [
+            value: (object) [
                 [
                     'from' => $uploadedFile,
                     ...$_FILES
