@@ -8,24 +8,29 @@ use App\Enums\HttpStatusCode;
 
 define(
     constant_name: 'ROOT_DIR',
-    value: dirname(path: __DIR__)
+    value: dirname(path: __DIR__) . DIRECTORY_SEPARATOR
+);
+
+define(
+    constant_name: 'VIEW_PATH',
+    value: ROOT_DIR . 'views' . DIRECTORY_SEPARATOR
 );
 
 define(
     constant_name: 'STORAGE_PATH',
-    value: ROOT_DIR . '/storage'
+    value: ROOT_DIR . 'storage' . DIRECTORY_SEPARATOR
 );
 
-require_once ROOT_DIR . '/vendor/autoload.php';
+require_once ROOT_DIR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 $router = new App\Router();
 
 $router
-    ->get(route: '/', action: [App\Classes\Home::class, 'index'])
-    ->post(route: '/upload', action: [App\Classes\Home::class, 'upload'])
-    ->get(route: '/users', action: [App\Classes\Users::class, 'all'])
-    ->get(route: '/users/create', action: [App\Classes\Users::class, 'create'])
-    ->post(route: '/users/create', action: [App\Classes\Users::class, 'store']);
+    ->get(route: '/', action: [App\Controllers\Home::class, 'index'])
+    ->post(route: '/upload', action: [App\Controllers\Home::class, 'upload'])
+    ->get(route: '/users', action: [App\Controllers\Users::class, 'all'])
+    ->get(route: '/users/create', action: [App\Controllers\Users::class, 'create'])
+    ->post(route: '/users/create', action: [App\Controllers\Users::class, 'store']);
 
 try {
     $page = $router->resolve(

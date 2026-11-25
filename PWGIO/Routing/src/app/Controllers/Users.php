@@ -2,25 +2,21 @@
 
 declare(strict_types = 1);
 
-namespace App\Classes;
+namespace App\Controllers;
 
 class Users
 {
     public function all(): string
     {
         return <<<HTML
-            <h1>USERS</h1>
+            
         HTML;
     }
 
     public function create(): string
     {
         return <<<HTML
-            <form action="/users/create" method="POST">
-                <label for="name">Name</label>
-                <input type="text" name="name"/>
-                <button type="submit">submit</button>
-            </form>
+
         HTML;
     }
 
