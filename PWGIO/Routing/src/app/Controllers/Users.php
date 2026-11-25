@@ -4,20 +4,18 @@ declare(strict_types = 1);
 
 namespace App\Controllers;
 
+use App\View;
+
 class Users
 {
-    public function all(): string
+    public function all(): View
     {
-        return <<<HTML
-            
-        HTML;
+        return View::render(view: 'users/index');
     }
 
-    public function create(): string
+    public function create(): View
     {
-        return <<<HTML
-
-        HTML;
+        return View::render(view: 'users/create');
     }
 
     public function store(): string

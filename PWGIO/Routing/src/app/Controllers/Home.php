@@ -10,7 +10,7 @@ class Home
 {
     public function index(): View
     {
-        return View::render('index');
+        return View::render(view: 'index');
     }
 
     public function upload(): string
