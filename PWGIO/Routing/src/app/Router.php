@@ -32,7 +32,7 @@ final class Router
     /**
      * Registers a route and its corresponding handler for an HTTP method.
      *
-     * @param string $requestMethod HTTP request method.
+     * @param HttpRequestMethod $requestMethod HTTP request method.
      * @param string $route Route URI.
      * @param array{0: class-string|object, 1: non-empty-string}|callable(): mixed $action Route handler.
      *
