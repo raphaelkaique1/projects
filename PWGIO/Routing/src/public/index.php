@@ -5,6 +5,7 @@ declare(strict_types = 1);
 session_start();
 
 use App\Enums\HttpStatusCode;
+use App\View;
 
 define(
     constant_name: 'ROOT_DIR',
@@ -38,7 +39,10 @@ try {
         requestMethod: $_SERVER['REQUEST_METHOD']
     ) and $code = (HttpStatusCode::OK)()['code'];
 } catch (Throwable $error) {
-    $response = $error->getMessage() and
+    $response = View::render(
+        view: 'error/404',
+        params: ['error' => $error->getMessage()]
+    ) and
     $code = $error->getCode();
 }
 
