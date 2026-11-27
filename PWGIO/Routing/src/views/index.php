@@ -4,3 +4,4 @@
     <input type="file" name="file"/>
     <button type="submit">submit</button>
 </form>
+<span><?= @$alerts; ?></span>

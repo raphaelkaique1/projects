@@ -29,6 +29,8 @@ class View
                 ...(HttpStatusCode::NOT_FOUND)()
             );
 
+        extract(array: $this->params);
+
         ob_start();
 
         require_once $viewPath;

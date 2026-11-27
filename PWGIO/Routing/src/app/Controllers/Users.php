@@ -18,20 +18,11 @@ class Users
         return View::render(view: 'users/create');
     }
 
-    public function store(): string
+    public function store(): View
     {
-        $data = json_encode(
-            value: $_POST,
-            flags: JSON_THROW_ON_ERROR
-            | JSON_UNESCAPED_SLASHES
-            | JSON_UNESCAPED_UNICODE
-            | JSON_PRETTY_PRINT
+        return View::render(
+            view: 'users/index',
+            params: $_POST
         );
-
-        return <<<HTML
-        <pre>
-        {$data}
-        </pre>
-        HTML;
     }
 }
