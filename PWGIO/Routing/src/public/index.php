@@ -33,12 +33,12 @@ $router
     ->post(route: '/users/create', action: [App\Controllers\Users::class, 'store']);
 
 try {
-    $page = $router->resolve(
+    $response = $router->resolve(
         requestUri: $_SERVER['REQUEST_URI'],
         requestMethod: $_SERVER['REQUEST_METHOD']
     ) and $code = (HttpStatusCode::OK)()['code'];
 } catch (Throwable $error) {
-    $page = $error->getMessage() and
+    $response = $error->getMessage() and
     $code = $error->getCode();
 }
 
@@ -47,4 +47,4 @@ header(
     response_code: $code
 );
 
-echo $page;
+echo $response;
